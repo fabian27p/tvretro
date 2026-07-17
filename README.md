@@ -1,50 +1,25 @@
-# RetroTV 0.1.0
+# RetroTV
 
-Primera versión funcional para Raspberry Pi OS Lite.
+Proyecto para crear una TV retro generica en Raspberry Pi OS Lite.
 
-## Incluye
-- MPV persistente por IPC
-- startup
-- 12 canales
-- reproducción aleatoria/secuencial
-- OSD
-- standby con reloj
-- menú CRT básico
-- GPIO IR configurable (decodificación IR pendiente)
-- estado persistente
-- servicio systemd
-- instalador y respaldo
+La aplicacion vive en [`RetroTV/`](RetroTV/) y usa Python + `mpv` para reproducir videos por canales, mostrar animaciones de inicio/cambio y dejar una pantalla standby tipo reloj/calendario CRT.
 
-## Instalación
-Copia `app`, `config`, `tools`, `systemd` y este README dentro de `/home/retro/RetroTV/`. No borres `assets` ni `channels`.
+## Instalacion rapida
 
 ```bash
-cd /home/retro/RetroTV
+sudo apt update
+sudo apt install -y git
+sudo useradd -m -s /bin/bash retro
+sudo -u retro git clone https://github.com/fabian27p/tvretro.git /home/retro/tvretro-src
+cd /home/retro/tvretro-src/RetroTV
 chmod +x tools/*.sh
 ./tools/install.sh
-sudo pkill mpv || true
-python3 /home/retro/RetroTV/app/main.py
-```
-
-## Controles
-- N/flecha derecha: canal siguiente
-- P/flecha izquierda: canal anterior
-- flecha arriba/abajo: volumen
-- M: menú
-- Enter: cambiar opción
-- Escape: cerrar menú
-- Espacio: pausa
-- S: standby
-- Q: salir
-
-## Servicio (solo después de probar)
-```bash
 sudo systemctl enable --now retrotv
 ```
 
-Para desactivar:
-```bash
-sudo systemctl disable --now retrotv
-```
+Los episodios o videos grandes no van en el repo. Copialos aparte en:
 
-El IR queda configurado en `config/settings.json`, inicialmente BCM GPIO6 (pin físico 31).
+```text
+/home/retro/RetroTV/channels/channel01/
+/home/retro/RetroTV/channels/channel02/
+```

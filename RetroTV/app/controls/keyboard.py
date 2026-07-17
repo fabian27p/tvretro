@@ -7,6 +7,8 @@ class Keyboard:
     def __exit__(self,*a):
         if self.old: termios.tcsetattr(self.fd,termios.TCSADRAIN,self.old)
     def read(self):
+        if not sys.stdin.isatty():
+            return None
         c=sys.stdin.read(1)
         if c=='\x1b':
             n=sys.stdin.read(1)

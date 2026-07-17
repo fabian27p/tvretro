@@ -8,9 +8,11 @@ Group=retro
 WorkingDirectory=/home/retro/RetroTV
 Environment=RETROTV_BASE=/home/retro/RetroTV
 Environment=HOME=/home/retro
+Environment=PYTHONUNBUFFERED=1
 ExecStart=/usr/bin/python3 /home/retro/RetroTV/app/main.py
 Restart=on-failure
 RestartSec=5
+StandardInput=null
 StandardOutput=append:/home/retro/RetroTV/logs/retrotv-service.log
 StandardError=append:/home/retro/RetroTV/logs/retrotv-service.log
 [Install]

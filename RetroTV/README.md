@@ -1,50 +1,238 @@
-# RetroTV 0.1.0
+# RetroTV 0.1.1
 
-Primera versión funcional para Raspberry Pi OS Lite.
+Aplicacion Python ligera para crear una TV retro generica en Raspberry Pi OS Lite. Arranca `mpv`, reproduce videos por canales y puede quedar corriendo como servicio `systemd`.
 
-## Incluye
-- MPV persistente por IPC
-- startup
-- 12 canales
-- reproducción aleatoria/secuencial
-- OSD
-- standby con reloj
-- menú CRT básico
-- GPIO IR configurable (decodificación IR pendiente)
-- estado persistente
-- servicio systemd
-- instalador y respaldo
+## Objetivo
 
-## Instalación
-Copia `app`, `config`, `tools`, `systemd` y este README dentro de `/home/retro/RetroTV/`. No borres `assets` ni `channels`.
+- Reproducir videos de forma continua.
+- Simular canales con carpetas separadas.
+- Permitir que cada canal tenga cualquier serie, pelicula o coleccion.
+- Encender directo a pantalla completa.
+- Funcionar bien en Raspberry Pi OS Lite o una distro Linux compatible.
+
+## Estructura
+
+```text
+RetroTV/
+  app/                 Codigo de la aplicacion
+  assets/
+    animations/        startup.mp4, shutdown.mp4, static.mp4, channel_change.mp4
+    sounds/            power_on.wav, power_off.mp3
+  channels/
+    README.md          Guia para cargar contenido
+    channel01/         Videos del canal 1
+    channel02/         Videos del canal 2
+  config/
+    settings.json      Configuracion principal
+    state.json         Estado persistente
+  systemd/
+    retrotv.service
+  tools/
+    install.sh
+    backup_retrotv.sh
+```
+
+## Instalacion en Raspberry Pi OS Lite
+
+Crear usuario recomendado:
+
+```bash
+sudo useradd -m -s /bin/bash retro
+sudo mkdir -p /home/retro
+sudo chown retro:retro /home/retro
+```
+
+### Desde GitHub
+
+Instalar dependencias base:
+
+```bash
+sudo apt update
+sudo apt install -y git
+```
+
+Clonar el repo fuente:
+
+```bash
+sudo -u retro git clone https://github.com/fabian27p/tvretro.git /home/retro/tvretro-src
+```
+
+Si el repo es privado, usa SSH o un token de GitHub en lugar de la URL publica.
+
+Instalar RetroTV:
+
+```bash
+cd /home/retro/tvretro-src/RetroTV
+chmod +x tools/*.sh
+./tools/install.sh
+```
+
+El instalador copia la app al destino final:
+
+```text
+/home/retro/RetroTV
+```
+
+### Copia manual
+
+Tambien puedes copiar este directorio a:
+
+```text
+/home/retro/RetroTV
+```
+
+Instalar dependencias:
 
 ```bash
 cd /home/retro/RetroTV
 chmod +x tools/*.sh
 ./tools/install.sh
-sudo pkill mpv || true
+```
+
+Probar manualmente:
+
+```bash
 python3 /home/retro/RetroTV/app/main.py
 ```
 
-## Controles
-- N/flecha derecha: canal siguiente
-- P/flecha izquierda: canal anterior
-- flecha arriba/abajo: volumen
-- M: menú
-- Enter: cambiar opción
-- Escape: cerrar menú
-- Espacio: pausa
-- S: standby
-- Q: salir
+Activar arranque automatico:
 
-## Servicio (solo después de probar)
 ```bash
 sudo systemctl enable --now retrotv
 ```
 
-Para desactivar:
+Ver logs:
+
 ```bash
-sudo systemctl disable --now retrotv
+journalctl -u retrotv -f
+tail -f /home/retro/RetroTV/logs/retrotv.log
 ```
 
-El IR queda configurado en `config/settings.json`, inicialmente BCM GPIO6 (pin físico 31).
+## Canales
+
+Pon los videos dentro de las carpetas:
+
+```text
+channels/channel01/
+channels/channel02/
+channels/channel03/
+```
+
+Cada canal es generico. Puedes organizarlo como prefieras:
+
+```text
+channels/channel01/Mi Serie/S01E01.mp4
+channels/channel01/Mi Serie/S01E02.mp4
+channels/channel02/Otra Coleccion/video-001.mp4
+```
+
+Opcionalmente crea un `channel.json` dentro de cada canal:
+
+```json
+{
+  "name": "Canal Animacion"
+}
+```
+
+Ese nombre se muestra en pantalla al cambiar de canal.
+
+Extensiones soportadas por defecto:
+
+- `.mp4`
+- `.mkv`
+- `.m4v`
+- `.mov`
+
+Para una pantalla pequena conviene usar H.264 + AAC en 480p o 720p.
+
+## Assets de inicio
+
+Puedes agregar al repositorio los videos y sonidos cortos de la experiencia retro:
+
+```text
+assets/animations/startup.mp4
+assets/animations/shutdown.mp4
+assets/animations/channel_change.mp4
+assets/animations/static.mp4
+assets/sounds/power_on.wav
+assets/sounds/power_off.mp3
+```
+
+RetroTV los detecta automaticamente. Si no existen, simplemente los salta.
+
+Para mantener el repo rapido, deja aqui solo clips cortos. Los episodios o bibliotecas grandes conviene copiarlos despues a `channels/` en la Raspberry, o montarlos desde un USB/SSD.
+
+## Controles de teclado
+
+- `N` o flecha derecha: canal siguiente
+- `P` o flecha izquierda: canal anterior
+- flecha arriba/abajo: volumen
+- `M`: menu
+- `Enter`: cambiar opcion del menu
+- `Escape`: cerrar menu
+- espacio: pausa
+- `S`: standby
+- `Q`: salir
+
+Cuando corre como servicio no hay teclado conectado a stdin; la app sigue reproduciendo y queda lista para control IR futuro.
+
+## Configuracion de video
+
+En `config/settings.json`:
+
+```json
+"mpv": {
+  "video_output": "drm",
+  "hwdec": "auto-safe",
+  "extra_args": []
+}
+```
+
+Para Raspberry Pi OS Lite usa `drm`.
+
+Para probar en escritorio, cambia temporalmente a:
+
+```json
+"video_output": "auto"
+```
+
+## Estilo CRT
+
+El texto en pantalla usa verde fluorescente por defecto:
+
+```json
+"display": {
+  "osd_color": "#FF39FF14",
+  "osd_font_size": 36
+}
+```
+
+El reloj de standby se muestra grande y centrado:
+
+```json
+"standby": {
+  "show_date": true,
+  "show_weekday": true,
+  "date_style": "calendar",
+  "standby_message": "",
+  "clock_font_size": 76,
+  "clock_align_x": "center",
+  "clock_align_y": "center"
+}
+```
+
+La fecha usa la hora local del sistema, asi que no necesita internet. Si quieres mostrar una frase bajo la fecha, puedes usar `standby_message`, por ejemplo `"standby_message": "MODO ESCRITORIO"`.
+
+## Placa Allwinner H616 / IK316-EMCP
+
+Este proyecto no es Android; es una alternativa Linux ligera. Para usarlo en la placa H616 necesitas una imagen Linux que ya tenga salida HDMI, audio y aceleracion o decodificacion suficiente para `mpv`.
+
+Ruta recomendada:
+
+1. Conseguir/respaldar firmware original de la placa.
+2. Probar una imagen Linux compatible H616.
+3. Instalar `mpv` y Python 3.
+4. Copiar RetroTV a `/home/retro/RetroTV`.
+5. Ajustar `config/settings.json` si `--gpu-context=drm` no funciona.
+
+Con 1GB de RAM, esta ruta suele ser mas razonable que un Android completo.

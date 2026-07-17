@@ -1,0 +1,10 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+logs/
+backups/
+*.log
+channels/channel*/**/*
+!channels/channel*/.gitkeep
+!channels/channel*/channel.json
+!channels/channel*/channel.json.example

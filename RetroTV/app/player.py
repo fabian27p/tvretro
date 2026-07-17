@@ -1,10 +1,22 @@
 import json,socket,subprocess,time
 from pathlib import Path
 class MPVPlayer:
-    def __init__(self,socket_path,logger): self.socket_path=Path(socket_path); self.logger=logger; self.process=None; self.req=0
+    def __init__(self,socket_path,logger,settings=None): self.socket_path=Path(socket_path); self.logger=logger; self.settings=settings; self.process=None; self.req=0
+    def build_cmd(self):
+        vo=(self.settings.get('mpv','video_output',default='drm') if self.settings else 'drm')
+        hwdec=(self.settings.get('mpv','hwdec',default='auto-safe') if self.settings else 'auto-safe')
+        cmd=['mpv','--idle=yes','--fullscreen=yes','--no-terminal','--really-quiet','--keep-open=yes','--input-ipc-server='+str(self.socket_path),'--no-osc','--no-input-default-bindings']
+        if vo=='drm':
+            cmd+=['--vo=gpu','--gpu-context=drm']
+        elif vo and vo!='auto':
+            cmd+=['--vo='+str(vo)]
+        if hwdec and hwdec!='off':
+            cmd+=['--hwdec='+str(hwdec)]
+        cmd+=list(self.settings.get('mpv','extra_args',default=[]) if self.settings else [])
+        return cmd
     def start(self):
         self.quit(); self.socket_path.unlink(missing_ok=True)
-        cmd=['mpv','--idle=yes','--fullscreen=yes','--no-terminal','--really-quiet','--keep-open=yes','--input-ipc-server='+str(self.socket_path),'--vo=gpu','--gpu-context=drm','--hwdec=auto-safe','--no-osc','--no-input-default-bindings']
+        cmd=self.build_cmd()
         self.process=subprocess.Popen(cmd,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
         for _ in range(100):
             if self.socket_path.exists(): return
@@ -23,7 +35,21 @@ class MPVPlayer:
                 raw+=c
             return json.loads(raw.splitlines()[0].decode()) if raw else None
     def load(self,p): self.command('loadfile',str(p),'replace')
-    def show(self,t,ms=2000): self.command('show-text',t,ms)
+    def apply_osd_style(self,style=None):
+        if not self.settings: return
+        style=style or {}
+        props={
+            'osd-color':style.get('color',self.settings.get('display','osd_color',default='#FF39FF14')),
+            'osd-border-color':style.get('border_color',self.settings.get('display','osd_border_color',default='#FF003300')),
+            'osd-font-size':style.get('font_size',self.settings.get('display','osd_font_size',default=36)),
+            'osd-align-x':style.get('align_x',self.settings.get('display','osd_align_x',default='center')),
+            'osd-align-y':style.get('align_y',self.settings.get('display','osd_align_y',default='top')),
+        }
+        for k,v in props.items(): self.command('set_property',k,v)
+    def show(self,t,ms=2000,style=None):
+        if self.settings and not self.settings.get('display','show_osd',default=True): return
+        self.apply_osd_style(style)
+        self.command('show-text',t,ms)
     def volume(self,v): self.command('set_property','volume',v)
     def mute(self,m): self.command('set_property','mute','yes' if m else 'no')
     def pause(self): self.command('cycle','pause')
