@@ -14,7 +14,9 @@ class StandbyClock:
                 self.p.show(t,1500,self.style())
             self.stop_evt.wait(1)
     def style(self):
-        positions=[('center','center',20,20),('right','top',10,8),('left','bottom',10,8),('right','bottom',6,6),('left','top',6,6)]
+        safe_x=int(self.s.get('standby','clock_safe_margin_x',default=110))
+        safe_y=int(self.s.get('standby','clock_safe_margin_y',default=78))
+        positions=[('center','center',60,52),('right','top',safe_x,safe_y),('left','bottom',safe_x,safe_y),('right','bottom',safe_x,safe_y),('left','top',safe_x,safe_y)]
         idx=0
         if self.s.get('standby','clock_motion'):
             seconds=max(2,int(self.s.get('standby','clock_motion_seconds',default=8)))

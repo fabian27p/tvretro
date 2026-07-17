@@ -218,6 +218,8 @@ El reloj de standby se muestra grande y centrado:
   "date_style": "calendar",
   "standby_message": "",
   "clock_font_size": 76,
+  "clock_safe_margin_x": 110,
+  "clock_safe_margin_y": 78,
   "clock_align_x": "center",
   "clock_align_y": "center"
 }
@@ -225,7 +227,7 @@ El reloj de standby se muestra grande y centrado:
 
 La fecha usa la hora local del sistema, asi que no necesita internet. Si quieres mostrar una frase bajo la fecha, puedes usar `standby_message`, por ejemplo `"standby_message": "MODO ESCRITORIO"`.
 
-El OSD de canal aparece arriba a la derecha. El volumen aparece abajo con una barra verde. En standby, el reloj/calendario usa gris tenue y se desplaza cada pocos segundos para no quedar fijo en pantalla.
+El OSD de canal aparece arriba a la derecha. El volumen aparece abajo con una barra verde. En standby, el reloj/calendario usa gris tenue y se desplaza cada pocos segundos dentro de un area segura para no pegarse a las esquinas redondeadas de una pantalla CRT.
 
 ## Placa Allwinner H616 / IK316-EMCP
 

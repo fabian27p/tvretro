@@ -59,7 +59,9 @@
     "clock_motion": true,
     "clock_motion_seconds": 8,
     "clock_color": "#AA9EA89E",
-    "clock_border_color": "#66333333"
+    "clock_border_color": "#66333333",
+    "clock_safe_margin_x": 110,
+    "clock_safe_margin_y": 78
   },
   "ir": {
     "enabled": false,
