@@ -6,6 +6,7 @@ class StandbyClock:
     def __init__(self,player,settings): self.p=player; self.s=settings; self.stop_evt=threading.Event(); self.th=None
     def start(self):
         self.stop(); self.stop_evt.clear(); self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace')
+        self.p.command('set_property','pause',False)
         self.th=threading.Thread(target=self.loop,daemon=True); self.th.start()
     def loop(self):
         while not self.stop_evt.is_set():

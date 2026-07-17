@@ -51,7 +51,7 @@ class RetroTV:
                 if v: break
         self.gen+=1; g=self.gen
         if not v:
-            self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.sound('no_signal.mp3'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',5000,self.channel_style()); return
+            self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.p.command('set_property','pause',False); self.sound('no_signal.mp3'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',5000,self.channel_style()); return
         last[str(self.ch)]=str(v); self.st.set('last_video_by_channel',last); self.st.set('current_channel',self.ch); self.st.save(); self.p.load(v); self.p.show(f'CH {self.ch:02d}\n{self.lib.name(self.ch)}',2000,self.channel_style())
         threading.Thread(target=self.monitor,args=(g,),daemon=True).start()
     def monitor(self,g):
