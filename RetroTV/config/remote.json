@@ -1,0 +1,5 @@
+{
+  "gpio_bcm": 6,
+  "protocol": "auto",
+  "codes": {}
+}

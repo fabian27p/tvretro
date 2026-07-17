@@ -1,0 +1,17 @@
+[Unit]
+Description=RetroTV CRT application
+After=local-fs.target sound.target
+[Service]
+Type=simple
+User=retro
+Group=retro
+WorkingDirectory=/home/retro/RetroTV
+Environment=RETROTV_BASE=/home/retro/RetroTV
+Environment=HOME=/home/retro
+ExecStart=/usr/bin/python3 /home/retro/RetroTV/app/main.py
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/home/retro/RetroTV/logs/retrotv-service.log
+StandardError=append:/home/retro/RetroTV/logs/retrotv-service.log
+[Install]
+WantedBy=multi-user.target
