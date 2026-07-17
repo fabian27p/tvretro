@@ -16,7 +16,7 @@ class RetroTV:
     def __init__(self,base):
         self.base=Path(base); self.s=Settings(self.base/'config/settings.json'); self.s.load(); self.st=StateStore(self.base/'config/state.json'); self.st.load()
         self.log=configure_logging(Path(self.s.get('paths','logs'))/'retrotv.log'); self.lib=ChannelLibrary(self.s.get('paths','channels'),int(self.s.get('general','max_channels')),self.s.get('playback','supported_extensions'))
-        self.p=MPVPlayer(MPV_SOCKET,self.log,self.s,KEY_FIFO,MPV_INPUT_CONF); self.clock=StandbyClock(self.p,self.s); self.menu=CRTMenu(self.s,self.p); self.ir=IRController(self.s,self.log)
+        self.p=MPVPlayer(MPV_SOCKET,self.log,self.s,KEY_FIFO,MPV_INPUT_CONF); self.clock=StandbyClock(self.p,self.s); self.menu=CRTMenu(self.s,self.p,self.sound); self.ir=IRController(self.s,self.log)
         default_ch=int(self.s.get('general','default_channel'))
         saved_ch=int(self.st.get('current_channel',default_ch)) if self.s.get('general','remember_last_channel') else default_ch
         self.running=True; self.ch=saved_ch; self.vol=int(self.st.get('volume',self.s.get('audio','volume'))); self.muted=bool(self.st.get('muted',self.s.get('audio','muted'))); self.standby=False; self.gen=0
@@ -26,6 +26,9 @@ class RetroTV:
             if n:
                 p=self.asset(c,n)
                 if p.exists(): self.p.load(p); self.p.wait_end()
+    def sound(self,n):
+        p=self.asset('sounds',n)
+        if p.exists(): self.p.sound(p)
     def boot(self):
         self.p.start(); self.p.volume(self.vol); self.p.mute(self.muted); self.ir.start()
         if self.s.get('effects','startup_enabled'): self.effect('power_on.wav','startup.mp4')
@@ -48,7 +51,7 @@ class RetroTV:
                 if v: break
         self.gen+=1; g=self.gen
         if not v:
-            self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',5000,self.channel_style()); return
+            self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.sound('no_signal.mp3'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',5000,self.channel_style()); return
         last[str(self.ch)]=str(v); self.st.set('last_video_by_channel',last); self.st.set('current_channel',self.ch); self.st.save(); self.p.load(v); self.p.show(f'CH {self.ch:02d}\n{self.lib.name(self.ch)}',2000,self.channel_style())
         threading.Thread(target=self.monitor,args=(g,),daemon=True).start()
     def monitor(self,g):
@@ -61,6 +64,7 @@ class RetroTV:
     def change(self,d):
         if self.standby:return
         if self.s.get('effects','channel_change_enabled'):
+            self.sound('channel_change.mp3')
             p=self.asset('animations','channel_change.mp4')
             if not p.exists(): p=self.asset('animations','static.mp4')
             if p.exists(): self.p.load(p); time.sleep(float(self.s.get('effects','static_duration_seconds')))
@@ -86,9 +90,9 @@ class RetroTV:
             return
         if k in ('n','RIGHT'): self.change(1)
         elif k in ('p','LEFT'): self.change(-1)
-        elif k=='UP': self.vol=min(int(self.s.get('audio','max_volume')),self.vol+5); self.p.volume(self.vol); self.p.show(self.volume_text(),1000,self.volume_style())
-        elif k=='DOWN': self.vol=max(0,self.vol-5); self.p.volume(self.vol); self.p.show(self.volume_text(),1000,self.volume_style())
-        elif k=='m': self.menu.toggle()
+        elif k=='UP': self.vol=min(int(self.s.get('audio','max_volume')),self.vol+5); self.p.volume(self.vol); self.sound('volume.mp3'); self.p.show(self.volume_text(),1000,self.volume_style())
+        elif k=='DOWN': self.vol=max(0,self.vol-5); self.p.volume(self.vol); self.sound('volume.mp3'); self.p.show(self.volume_text(),1000,self.volume_style())
+        elif k=='m': self.sound('menu_open.mp3'); self.menu.toggle()
         elif k=='SPACE': self.p.pause()
         elif k=='s': self.standby_toggle()
         elif k=='q': self.running=False

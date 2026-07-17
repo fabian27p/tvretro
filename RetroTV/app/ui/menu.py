@@ -12,7 +12,9 @@ ITEMS=[
     ('GPIO IR BCM','ir','gpio_bcm'),
 ]
 class CRTMenu:
-    def __init__(self,s,player): self.s=s; self.p=player; self.open=False; self.i=0
+    def __init__(self,s,player,sound=None): self.s=s; self.p=player; self.sound=sound; self.open=False; self.i=0
+    def beep(self,n):
+        if self.sound: self.sound(n)
     def toggle(self): self.open=not self.open; self.render() if self.open else self.p.show('MENU CERRADO',1000,self.style())
     def style(self): return {'font_size':28,'align_x':'left','align_y':'top','margin_x':34,'margin_y':28}
     def render(self):
@@ -26,9 +28,10 @@ class CRTMenu:
         v=self.s.get(a,b)
         if isinstance(v,bool): return 'SI' if v else 'NO'
         return str(v)
-    def up(self): self.i=(self.i-1)%len(ITEMS); self.render()
-    def down(self): self.i=(self.i+1)%len(ITEMS); self.render()
+    def up(self): self.i=(self.i-1)%len(ITEMS); self.beep('menu_move.mp3'); self.render()
+    def down(self): self.i=(self.i+1)%len(ITEMS); self.beep('menu_move.mp3'); self.render()
     def activate(self):
+        self.beep('menu_select.mp3')
         _,a,b=ITEMS[self.i]; v=self.s.get(a,b)
         if isinstance(v,bool): v=not v
         elif (a,b)==('playback','mode'): v='sequential' if v=='random' else 'random'

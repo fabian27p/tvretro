@@ -51,6 +51,8 @@ class MPVPlayer:
                 raw+=c
             return json.loads(raw.splitlines()[0].decode()) if raw else None
     def load(self,p): self.command('loadfile',str(p),'replace')
+    def sound(self,p):
+        self.command('audio-add',str(p),'auto')
     def apply_osd_style(self,style=None):
         if not self.settings: return
         style=style or {}
