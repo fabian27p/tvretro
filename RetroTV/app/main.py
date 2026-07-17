@@ -40,6 +40,11 @@ class RetroTV:
     def volume_text(self):
         width=20; filled=round(width*self.vol/max(1,int(self.s.get('audio','max_volume'))))
         return f'VOLUMEN {self.vol:03d}\n[{"#"*filled}{"-"*(width-filled)}]'
+    def no_signal_animation(self):
+        for name in ('no_signal.mp4','static.mp4','channel_change.mp4'):
+            p=self.asset('animations',name)
+            if p.exists(): return p
+        return None
     def play_channel(self,n):
         self.clock.stop(); self.standby=False; self.ch=self.lib.wrap(n); last=self.st.get('last_video_by_channel',{}); prev=last.get(str(self.ch))
         avoid_repeat=bool(self.s.get('playback','avoid_immediate_repeat'))
@@ -51,7 +56,10 @@ class RetroTV:
                 if v: break
         self.gen+=1; g=self.gen
         if not v:
-            self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.p.command('set_property','pause',False); self.sound('no_signal.mp3'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',5000,self.channel_style()); return
+            anim=self.no_signal_animation()
+            if anim: self.p.load(anim,loop=True)
+            else: self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.p.command('set_property','pause',False)
+            self.sound('no_signal.mp3'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',60000,self.channel_style()); return
         last[str(self.ch)]=str(v); self.st.set('last_video_by_channel',last); self.st.set('current_channel',self.ch); self.st.save(); self.p.load(v); self.p.show(f'CH {self.ch:02d}\n{self.lib.name(self.ch)}',2000,self.channel_style())
         threading.Thread(target=self.monitor,args=(g,),daemon=True).start()
     def monitor(self,g):
