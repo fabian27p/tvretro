@@ -9,13 +9,14 @@ ITEMS=[
     ('Reloj en movimiento','standby','clock_motion'),
     ('Tamano reloj','standby','clock_font_size'),
     ('Probar volumen','action','volume_test'),
+    ('Actualizar hora','action','update_clock'),
     ('Config WiFi','action','wifi_info'),
     ('IR remoto','ir','enabled'),
     ('Aprender IR','ir','learn_enabled'),
     ('GPIO IR BCM','ir','gpio_bcm'),
 ]
 class CRTMenu:
-    def __init__(self,s,player,sound=None): self.s=s; self.p=player; self.sound=sound; self.open=False; self.i=0
+    def __init__(self,s,player,sound=None,actions=None): self.s=s; self.p=player; self.sound=sound; self.actions=actions or {}; self.open=False; self.i=0
     def beep(self,n):
         if self.sound: self.sound(n)
     def toggle(self): self.open=not self.open; self.render() if self.open else self.p.show('MENU CERRADO',1000,self.style())
@@ -39,8 +40,12 @@ class CRTMenu:
         if a=='action':
             if b=='volume_test':
                 self.beep('volume.mp3'); self.p.show('PRUEBA VOLUMEN\n[###############-----]',1200,self.style())
+            elif b=='update_clock':
+                action=self.actions.get('update_clock')
+                ok,msg=action() if action else (False,'HORA\nAccion no disponible')
+                self.p.show(msg,5000,self.style())
             elif b=='wifi_info':
-                self.p.show('WIFI\nConfigurar con raspi-config, nmtui o Raspberry Pi Imager',5000,self.style())
+                self.p.show('WIFI\nUsar Raspberry Pi Imager, raspi-config, nmtui o nmcli',5000,self.style())
             return
         if isinstance(v,bool): v=not v
         elif (a,b)==('playback','mode'):

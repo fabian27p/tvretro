@@ -12,11 +12,12 @@ from ui.standby import StandbyClock
 from ui.menu import CRTMenu
 from controls.keyboard import Keyboard
 from controls.ir import IRController
+from system_actions import update_clock
 class RetroTV:
     def __init__(self,base):
         self.base=Path(base); self.s=Settings(self.base/'config/settings.json'); self.s.load(); self.st=StateStore(self.base/'config/state.json'); self.st.load()
         self.log=configure_logging(Path(self.s.get('paths','logs'))/'retrotv.log'); self.lib=ChannelLibrary(self.s.get('paths','channels'),int(self.s.get('general','max_channels')),self.s.get('playback','supported_extensions'))
-        self.p=MPVPlayer(MPV_SOCKET,self.log,self.s,KEY_FIFO,MPV_INPUT_CONF); self.clock=StandbyClock(self.p,self.s); self.menu=CRTMenu(self.s,self.p,self.sound); self.ir=IRController(self.s,self.log)
+        self.p=MPVPlayer(MPV_SOCKET,self.log,self.s,KEY_FIFO,MPV_INPUT_CONF); self.clock=StandbyClock(self.p,self.s); self.menu=CRTMenu(self.s,self.p,self.sound,{'update_clock':update_clock}); self.ir=IRController(self.s,self.log)
         default_ch=int(self.s.get('general','default_channel'))
         saved_ch=int(self.st.get('current_channel',default_ch)) if self.s.get('general','remember_last_channel') else default_ch
         self.running=True; self.ch=saved_ch; self.vol=int(self.st.get('volume',self.s.get('audio','volume'))); self.muted=bool(self.st.get('muted',self.s.get('audio','muted'))); self.standby=False; self.gen=0
