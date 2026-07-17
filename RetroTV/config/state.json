@@ -3,5 +3,6 @@
   "volume": 70,
   "muted": false,
   "standby": false,
-  "last_video_by_channel": {}
+  "last_video_by_channel": {},
+  "resume_by_channel": {}
 }

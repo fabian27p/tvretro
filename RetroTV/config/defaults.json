@@ -15,6 +15,12 @@
       ".m4v",
       ".mov",
       ".avi"
+    ],
+    "modes": [
+      "random",
+      "sequential",
+      "daily",
+      "resume"
     ]
   },
   "display": {
@@ -66,7 +72,8 @@
   "ir": {
     "enabled": false,
     "gpio_bcm": 6,
-    "protocol": "auto"
+    "protocol": "auto",
+    "learn_enabled": false
   },
   "paths": {
     "base": "/home/retro/RetroTV",
@@ -74,5 +81,9 @@
     "assets": "/home/retro/RetroTV/assets",
     "logs": "/home/retro/RetroTV/logs",
     "backups": "/home/retro/RetroTV/backups"
+  },
+  "network": {
+    "wifi_configurable": false,
+    "note": "Use Raspberry Pi Imager, raspi-config, nmcli or nmtui for WiFi setup."
   }
 }

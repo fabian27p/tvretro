@@ -1,5 +1,21 @@
 {
   "gpio_bcm": 6,
   "protocol": "auto",
+  "driver": "gpio-ir",
+  "actions": {
+    "KEY_POWER": "standby",
+    "KEY_CHANNELUP": "channel_next",
+    "KEY_CHANNELDOWN": "channel_prev",
+    "KEY_VOLUMEUP": "volume_up",
+    "KEY_VOLUMEDOWN": "volume_down",
+    "KEY_MENU": "menu",
+    "KEY_OK": "enter",
+    "KEY_UP": "up",
+    "KEY_DOWN": "down",
+    "KEY_LEFT": "left",
+    "KEY_RIGHT": "right",
+    "KEY_BACK": "escape",
+    "KEY_PLAYPAUSE": "pause"
+  },
   "codes": {}
 }

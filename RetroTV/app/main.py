@@ -48,11 +48,14 @@ class RetroTV:
     def play_channel(self,n):
         self.clock.stop(); self.standby=False; self.ch=self.lib.wrap(n); last=self.st.get('last_video_by_channel',{}); prev=last.get(str(self.ch))
         avoid_repeat=bool(self.s.get('playback','avoid_immediate_repeat'))
-        v=self.lib.choose(self.ch,self.s.get('playback','mode'),prev,avoid_repeat)
+        mode=self.s.get('playback','mode')
+        resume=(self.st.get('resume_by_channel',{}) or {}).get(str(self.ch))
+        v=self.lib.choose(self.ch,mode,prev,avoid_repeat,resume)
         if not v and self.s.get('playback','skip_empty_channels'):
             for _ in range(self.lib.max_channels-1):
                 self.ch=self.lib.wrap(self.ch+1)
-                v=self.lib.choose(self.ch,self.s.get('playback','mode'),last.get(str(self.ch)),avoid_repeat)
+                resume=(self.st.get('resume_by_channel',{}) or {}).get(str(self.ch))
+                v=self.lib.choose(self.ch,mode,last.get(str(self.ch)),avoid_repeat,resume)
                 if v: break
         self.gen+=1; g=self.gen
         if not v:
@@ -60,15 +63,32 @@ class RetroTV:
             if anim: self.p.load(anim,loop=True)
             else: self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.p.command('set_property','pause',False)
             self.sound('no_signal.mp3'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',60000,self.channel_style()); return
-        last[str(self.ch)]=str(v); self.st.set('last_video_by_channel',last); self.st.set('current_channel',self.ch); self.st.save(); self.p.load(v); self.p.show(f'CH {self.ch:02d}\n{self.lib.name(self.ch)}',2000,self.channel_style())
+        last[str(self.ch)]=str(v); self.st.set('last_video_by_channel',last); self.st.set('current_channel',self.ch); self.st.save(); self.p.load(v)
+        if mode=='resume' and resume and resume.get('path')==str(v) and float(resume.get('time',0))>5:
+            self.p.seek(max(0,float(resume.get('time',0))-2))
+        self.p.show(f'CH {self.ch:02d}\n{self.lib.name(self.ch)}',2000,self.channel_style())
         threading.Thread(target=self.monitor,args=(g,),daemon=True).start()
     def monitor(self,g):
         time.sleep(1)
+        ticks=0
         while self.running and g==self.gen and not self.standby:
+            ticks+=1
+            if ticks%4==0: self.save_resume()
             if self.p.prop('eof-reached') or self.p.prop('idle-active'):
+                self.clear_resume()
                 if g==self.gen and not self.standby:self.play_channel(self.ch)
                 return
             time.sleep(.5)
+    def save_resume(self):
+        path=self.p.prop('path'); pos=self.p.prop('time-pos')
+        if not path or pos is None: return
+        resume=self.st.get('resume_by_channel',{}) or {}
+        resume[str(self.ch)]={'path':str(path),'time':float(pos),'updated_at':int(time.time())}
+        self.st.set('resume_by_channel',resume); self.st.save()
+    def clear_resume(self):
+        resume=self.st.get('resume_by_channel',{}) or {}
+        if str(self.ch) in resume:
+            resume.pop(str(self.ch),None); self.st.set('resume_by_channel',resume); self.st.save()
     def change(self,d):
         if self.standby:return
         if self.s.get('effects','channel_change_enabled'):

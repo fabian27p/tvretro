@@ -76,6 +76,7 @@ class MPVPlayer:
     def volume(self,v): self.command('set_property','volume',v)
     def mute(self,m): self.command('set_property','mute','yes' if m else 'no')
     def pause(self): self.command('cycle','pause')
+    def seek(self,seconds): self.command('set_property','time-pos',float(seconds))
     def prop(self,n):
         r=self.command('get_property',n,reply=True); return r.get('data') if r and r.get('error')=='success' else None
     def wait_end(self):

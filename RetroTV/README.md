@@ -178,6 +178,17 @@ Cuando corre como servicio no hay teclado conectado a stdin; la app sigue reprod
 
 El menu permite cambiar modo de reproduccion, OSD, fecha/hora, movimiento del reloj standby, IR y GPIO BCM del receptor remoto.
 
+Modos de reproduccion:
+
+- `random`: episodio aleatorio del canal.
+- `sequential`: sigue el orden de archivos.
+- `daily`: un capitulo fijo por canal cada dia.
+- `resume`: vuelve al ultimo video y posicion guardada del canal.
+
+WiFi: en Raspberry Pi OS Lite conviene configurarlo con Raspberry Pi Imager, `raspi-config`, `nmtui` o `nmcli`. El menu de RetroTV muestra esta ayuda, pero no pide SSID/password desde el OSD porque escribir texto con control remoto es incomodo y poco seguro.
+
+IR: ver [docs/ir-remote.md](docs/ir-remote.md). Por defecto usa BCM GPIO 6.
+
 ## Configuracion de video
 
 En `config/settings.json`:

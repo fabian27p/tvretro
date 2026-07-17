@@ -8,7 +8,10 @@ ITEMS=[
     ('Mostrar dia','standby','show_weekday'),
     ('Reloj en movimiento','standby','clock_motion'),
     ('Tamano reloj','standby','clock_font_size'),
+    ('Probar volumen','action','volume_test'),
+    ('Config WiFi','action','wifi_info'),
     ('IR remoto','ir','enabled'),
+    ('Aprender IR','ir','learn_enabled'),
     ('GPIO IR BCM','ir','gpio_bcm'),
 ]
 class CRTMenu:
@@ -33,8 +36,16 @@ class CRTMenu:
     def activate(self):
         self.beep('menu_select.mp3')
         _,a,b=ITEMS[self.i]; v=self.s.get(a,b)
+        if a=='action':
+            if b=='volume_test':
+                self.beep('volume.mp3'); self.p.show('PRUEBA VOLUMEN\n[###############-----]',1200,self.style())
+            elif b=='wifi_info':
+                self.p.show('WIFI\nConfigurar con raspi-config, nmtui o Raspberry Pi Imager',5000,self.style())
+            return
         if isinstance(v,bool): v=not v
-        elif (a,b)==('playback','mode'): v='sequential' if v=='random' else 'random'
+        elif (a,b)==('playback','mode'):
+            modes=self.s.get('playback','modes',default=['random','sequential','daily','resume'])
+            v=modes[(modes.index(v)+1)%len(modes)] if v in modes else modes[0]
         elif (a,b)==('standby','clock_format'): v='12h' if v=='24h' else '24h'
         elif (a,b)==('standby','clock_font_size'): v=52 if int(v)>=84 else int(v)+8
         elif (a,b)==('ir','gpio_bcm'): v=2 if int(v)>=27 else int(v)+1
