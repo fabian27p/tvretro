@@ -85,5 +85,12 @@
   "network": {
     "wifi_configurable": false,
     "note": "Use Raspberry Pi Imager, raspi-config, nmcli or nmtui for WiFi setup."
+  },
+  "clock_manual": {
+    "year": 2026,
+    "month": 1,
+    "day": 1,
+    "hour": 12,
+    "minute": 0
   }
 }

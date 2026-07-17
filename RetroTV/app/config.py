@@ -10,6 +10,7 @@ DEFAULTS={
  "audio":{"volume":70,"max_volume":100,"muted":False},
  "effects":{"startup_enabled":True,"shutdown_enabled":True,"channel_change_enabled":True,"static_duration_seconds":0.5},
  "standby":{"enabled":True,"show_clock":True,"clock_format":"24h","show_date":True,"show_weekday":True,"date_language":"es","date_style":"calendar","standby_message":"","clock_font_size":64,"clock_align_x":"center","clock_align_y":"center","clock_motion":True,"clock_motion_seconds":8,"clock_safe_margin_x":110,"clock_safe_margin_y":78,"clock_color":"#AA9EA89E","clock_border_color":"#66333333"},
+ "clock_manual":{"year":2026,"month":1,"day":1,"hour":12,"minute":0},
  "ir":{"enabled":False,"gpio_bcm":6,"protocol":"auto","learn_enabled":False},
  "network":{"wifi_configurable":False,"note":"Use Raspberry Pi Imager, raspi-config, nmcli or nmtui for WiFi setup."},
  "paths":{"base":"/home/retro/RetroTV","channels":"/home/retro/RetroTV/channels","assets":"/home/retro/RetroTV/assets","logs":"/home/retro/RetroTV/logs","backups":"/home/retro/RetroTV/backups"}

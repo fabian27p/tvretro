@@ -185,7 +185,7 @@ Modos de reproduccion:
 - `daily`: un capitulo fijo por canal cada dia.
 - `resume`: vuelve al ultimo video y posicion guardada del canal.
 
-Hora/WiFi: el menu incluye `Actualizar hora`, pensado para sincronizar el reloj por NTP si la Raspberry tiene red. Para configurar WiFi en Raspberry Pi OS Lite conviene usar Raspberry Pi Imager, `raspi-config`, `nmtui` o `nmcli`; escribir SSID/password con control remoto es incomodo y poco seguro.
+Hora/WiFi: el menu incluye `Actualizar hora`, pensado para sincronizar el reloj por NTP si la Raspberry tiene red. Si no instalas pila RTC, tambien puedes ajustar ano, mes, dia, hora y minuto manualmente desde el menu y usar `Aplicar hora`. En los campos de hora manual, `Enter`/derecha sube y izquierda baja. Para configurar WiFi en Raspberry Pi OS Lite conviene usar Raspberry Pi Imager, `raspi-config`, `nmtui` o `nmcli`; escribir SSID/password con control remoto es incomodo y poco seguro.
 
 IR: ver [docs/ir-remote.md](docs/ir-remote.md). Por defecto usa BCM GPIO 6.
 
