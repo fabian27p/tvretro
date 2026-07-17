@@ -1,11 +1,27 @@
 import json,socket,subprocess,time
 from pathlib import Path
 class MPVPlayer:
-    def __init__(self,socket_path,logger,settings=None): self.socket_path=Path(socket_path); self.logger=logger; self.settings=settings; self.process=None; self.req=0
+    def __init__(self,socket_path,logger,settings=None,key_fifo_path=None,input_conf_path=None):
+        self.socket_path=Path(socket_path); self.logger=logger; self.settings=settings; self.key_fifo_path=Path(key_fifo_path) if key_fifo_path else None; self.input_conf_path=Path(input_conf_path) if input_conf_path else None; self.process=None; self.req=0
+    def write_input_conf(self):
+        if not self.key_fifo_path or not self.input_conf_path: return None
+        bindings={
+            'n':'n','p':'p','RIGHT':'RIGHT','LEFT':'LEFT','UP':'UP','DOWN':'DOWN',
+            'm':'m','ENTER':'ENTER','ESC':'ESC','SPACE':'SPACE','s':'s','q':'q',
+            'N':'n','P':'p','M':'m','S':'s','Q':'q'
+        }
+        lines=[]
+        fifo=str(self.key_fifo_path)
+        for key,token in bindings.items():
+            lines.append(f"{key} run \"/bin/sh\" \"-c\" \"printf '%s\\\\n' {token!r} > {fifo!r}\"")
+        self.input_conf_path.write_text('\n'.join(lines)+'\n',encoding='utf-8')
+        return self.input_conf_path
     def build_cmd(self):
         vo=(self.settings.get('mpv','video_output',default='drm') if self.settings else 'drm')
         hwdec=(self.settings.get('mpv','hwdec',default='auto-safe') if self.settings else 'auto-safe')
         cmd=['mpv','--idle=yes','--fullscreen=yes','--no-terminal','--really-quiet','--keep-open=yes','--input-ipc-server='+str(self.socket_path),'--no-osc','--no-input-default-bindings']
+        input_conf=self.write_input_conf()
+        if input_conf: cmd+=['--input-conf='+str(input_conf)]
         if vo=='drm':
             cmd+=['--vo=gpu','--gpu-context=drm']
         elif vo and vo!='auto':
@@ -44,6 +60,8 @@ class MPVPlayer:
             'osd-font-size':style.get('font_size',self.settings.get('display','osd_font_size',default=36)),
             'osd-align-x':style.get('align_x',self.settings.get('display','osd_align_x',default='center')),
             'osd-align-y':style.get('align_y',self.settings.get('display','osd_align_y',default='top')),
+            'osd-margin-x':style.get('margin_x',20),
+            'osd-margin-y':style.get('margin_y',20),
         }
         for k,v in props.items(): self.command('set_property',k,v)
     def show(self,t,ms=2000,style=None):

@@ -11,12 +11,24 @@ class StandbyClock:
         while not self.stop_evt.is_set():
             if self.s.get('standby','show_clock'):
                 t=self.text(datetime.now())
-                self.p.show(t,1500,{
-                    'font_size':self.s.get('standby','clock_font_size'),
-                    'align_x':self.s.get('standby','clock_align_x'),
-                    'align_y':self.s.get('standby','clock_align_y'),
-                })
+                self.p.show(t,1500,self.style())
             self.stop_evt.wait(1)
+    def style(self):
+        positions=[('center','center',20,20),('right','top',10,8),('left','bottom',10,8),('right','bottom',6,6),('left','top',6,6)]
+        idx=0
+        if self.s.get('standby','clock_motion'):
+            seconds=max(2,int(self.s.get('standby','clock_motion_seconds',default=8)))
+            idx=int(datetime.now().timestamp()//seconds)%len(positions)
+        x,y,mx,my=positions[idx]
+        return {
+                    'font_size':self.s.get('standby','clock_font_size'),
+                    'align_x':x if self.s.get('standby','clock_motion') else self.s.get('standby','clock_align_x'),
+                    'align_y':y if self.s.get('standby','clock_motion') else self.s.get('standby','clock_align_y'),
+                    'margin_x':mx,
+                    'margin_y':my,
+                    'color':self.s.get('standby','clock_color'),
+                    'border_color':self.s.get('standby','clock_border_color'),
+                }
     def text(self,now):
         fmt='%I:%M %p' if self.s.get('standby','clock_format')=='12h' else '%H:%M'
         lines=[now.strftime(fmt).lstrip('0')]

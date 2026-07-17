@@ -8,3 +8,4 @@ channels/channel*/**/*
 !channels/channel*/.gitkeep
 !channels/channel*/channel.json
 !channels/channel*/channel.json.example
+channels/channel*/channel.local.json

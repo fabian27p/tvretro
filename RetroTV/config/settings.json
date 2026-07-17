@@ -13,7 +13,8 @@
       ".mp4",
       ".mkv",
       ".m4v",
-      ".mov"
+      ".mov",
+      ".avi"
     ]
   },
   "display": {
@@ -23,7 +24,9 @@
     "osd_border_color": "#FF003300",
     "osd_font_size": 36,
     "osd_align_x": "center",
-    "osd_align_y": "top"
+    "osd_align_y": "top",
+    "channel_font_size": 30,
+    "volume_font_size": 34
   },
   "mpv": {
     "video_output": "drm",
@@ -50,9 +53,13 @@
     "date_language": "es",
     "date_style": "calendar",
     "standby_message": "",
-    "clock_font_size": 76,
+    "clock_font_size": 64,
     "clock_align_x": "center",
-    "clock_align_y": "center"
+    "clock_align_y": "center",
+    "clock_motion": true,
+    "clock_motion_seconds": 8,
+    "clock_color": "#AA9EA89E",
+    "clock_border_color": "#66333333"
   },
   "ir": {
     "enabled": false,

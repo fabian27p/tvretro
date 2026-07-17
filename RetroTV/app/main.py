@@ -6,7 +6,7 @@ from config import Settings
 from state import StateStore
 from channels import ChannelLibrary
 from player import MPVPlayer
-from constants import LOCK_FILE,MPV_SOCKET
+from constants import KEY_FIFO,LOCK_FILE,MPV_INPUT_CONF,MPV_SOCKET
 from logging_setup import configure_logging
 from ui.standby import StandbyClock
 from ui.menu import CRTMenu
@@ -16,7 +16,7 @@ class RetroTV:
     def __init__(self,base):
         self.base=Path(base); self.s=Settings(self.base/'config/settings.json'); self.s.load(); self.st=StateStore(self.base/'config/state.json'); self.st.load()
         self.log=configure_logging(Path(self.s.get('paths','logs'))/'retrotv.log'); self.lib=ChannelLibrary(self.s.get('paths','channels'),int(self.s.get('general','max_channels')),self.s.get('playback','supported_extensions'))
-        self.p=MPVPlayer(MPV_SOCKET,self.log,self.s); self.clock=StandbyClock(self.p,self.s); self.menu=CRTMenu(self.s,self.p); self.ir=IRController(self.s,self.log)
+        self.p=MPVPlayer(MPV_SOCKET,self.log,self.s,KEY_FIFO,MPV_INPUT_CONF); self.clock=StandbyClock(self.p,self.s); self.menu=CRTMenu(self.s,self.p); self.ir=IRController(self.s,self.log)
         default_ch=int(self.s.get('general','default_channel'))
         saved_ch=int(self.st.get('current_channel',default_ch)) if self.s.get('general','remember_last_channel') else default_ch
         self.running=True; self.ch=saved_ch; self.vol=int(self.st.get('volume',self.s.get('audio','volume'))); self.muted=bool(self.st.get('muted',self.s.get('audio','muted'))); self.standby=False; self.gen=0
@@ -30,6 +30,13 @@ class RetroTV:
         self.p.start(); self.p.volume(self.vol); self.p.mute(self.muted); self.ir.start()
         if self.s.get('effects','startup_enabled'): self.effect('power_on.wav','startup.mp4')
         self.play_channel(self.ch)
+    def channel_style(self):
+        return {'font_size':self.s.get('display','channel_font_size',default=30),'align_x':'right','align_y':'top','margin_x':28,'margin_y':24}
+    def volume_style(self):
+        return {'font_size':self.s.get('display','volume_font_size',default=34),'align_x':'center','align_y':'bottom','margin_x':20,'margin_y':54}
+    def volume_text(self):
+        width=20; filled=round(width*self.vol/max(1,int(self.s.get('audio','max_volume'))))
+        return f'VOLUMEN {self.vol:03d}\n[{"#"*filled}{"-"*(width-filled)}]'
     def play_channel(self,n):
         self.clock.stop(); self.standby=False; self.ch=self.lib.wrap(n); last=self.st.get('last_video_by_channel',{}); prev=last.get(str(self.ch))
         avoid_repeat=bool(self.s.get('playback','avoid_immediate_repeat'))
@@ -41,8 +48,8 @@ class RetroTV:
                 if v: break
         self.gen+=1; g=self.gen
         if not v:
-            self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',5000); return
-        last[str(self.ch)]=str(v); self.st.set('last_video_by_channel',last); self.st.set('current_channel',self.ch); self.st.save(); self.p.load(v); self.p.show(f'CH {self.ch:02d}\n{self.lib.name(self.ch)}',2000)
+            self.p.command('loadfile','av://lavfi:color=c=black:s=1280x720:r=1','replace'); self.p.show(f'CH {self.ch:02d}\nSIN SEÑAL',5000,self.channel_style()); return
+        last[str(self.ch)]=str(v); self.st.set('last_video_by_channel',last); self.st.set('current_channel',self.ch); self.st.save(); self.p.load(v); self.p.show(f'CH {self.ch:02d}\n{self.lib.name(self.ch)}',2000,self.channel_style())
         threading.Thread(target=self.monitor,args=(g,),daemon=True).start()
     def monitor(self,g):
         time.sleep(1)
@@ -60,13 +67,17 @@ class RetroTV:
         self.play_channel(self.ch+d)
     def standby_toggle(self):
         if self.standby:
-            self.standby=False; self.clock.stop(); self.effect('power_on.wav','startup.mp4'); self.play_channel(self.ch)
+            self.standby=False; self.st.set('standby',False,save=True); self.clock.stop()
+            if self.s.get('effects','startup_enabled'): self.effect('power_on.wav','startup.mp4')
+            self.play_channel(self.ch)
         else:
             self.gen+=1; self.standby=True; self.st.set('standby',True,save=True)
             if self.s.get('effects','shutdown_enabled'): self.effect('power_off.mp3','shutdown.mp4')
             self.clock.start()
     def key(self,k):
         if not k: return
+        if self.standby and k not in ('q','m','ESC'):
+            self.standby_toggle(); return
         if self.menu.open:
             if k in ('m','ESC'): self.menu.toggle()
             elif k=='UP': self.menu.up()
@@ -75,15 +86,15 @@ class RetroTV:
             return
         if k in ('n','RIGHT'): self.change(1)
         elif k in ('p','LEFT'): self.change(-1)
-        elif k=='UP': self.vol=min(int(self.s.get('audio','max_volume')),self.vol+5); self.p.volume(self.vol); self.p.show(f'VOLUMEN {self.vol}')
-        elif k=='DOWN': self.vol=max(0,self.vol-5); self.p.volume(self.vol); self.p.show(f'VOLUMEN {self.vol}')
+        elif k=='UP': self.vol=min(int(self.s.get('audio','max_volume')),self.vol+5); self.p.volume(self.vol); self.p.show(self.volume_text(),1000,self.volume_style())
+        elif k=='DOWN': self.vol=max(0,self.vol-5); self.p.volume(self.vol); self.p.show(self.volume_text(),1000,self.volume_style())
         elif k=='m': self.menu.toggle()
         elif k=='SPACE': self.p.pause()
         elif k=='s': self.standby_toggle()
         elif k=='q': self.running=False
     def run(self):
-        self.boot()
-        with Keyboard() as kb:
+        with Keyboard(KEY_FIFO) as kb:
+            self.boot()
             while self.running:
                 k=kb.read()
                 if k is None: time.sleep(.5); continue

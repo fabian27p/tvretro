@@ -176,6 +176,8 @@ Para mantener el repo rapido, deja aqui solo clips cortos. Los episodios o bibli
 
 Cuando corre como servicio no hay teclado conectado a stdin; la app sigue reproduciendo y queda lista para control IR futuro.
 
+El menu permite cambiar modo de reproduccion, OSD, fecha/hora, movimiento del reloj standby, IR y GPIO BCM del receptor remoto.
+
 ## Configuracion de video
 
 En `config/settings.json`:
@@ -222,6 +224,8 @@ El reloj de standby se muestra grande y centrado:
 ```
 
 La fecha usa la hora local del sistema, asi que no necesita internet. Si quieres mostrar una frase bajo la fecha, puedes usar `standby_message`, por ejemplo `"standby_message": "MODO ESCRITORIO"`.
+
+El OSD de canal aparece arriba a la derecha. El volumen aparece abajo con una barra verde. En standby, el reloj/calendario usa gris tenue y se desplaza cada pocos segundos para no quedar fijo en pantalla.
 
 ## Placa Allwinner H616 / IK316-EMCP
 
