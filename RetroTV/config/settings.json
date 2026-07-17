@@ -37,11 +37,16 @@
   "mpv": {
     "video_output": "drm",
     "hwdec": "auto-safe",
-    "extra_args": []
+    "extra_args": [
+      "--profile=fast",
+      "--framedrop=vo",
+      "--vd-lavc-fast=yes",
+      "--vd-lavc-skiploopfilter=nonkey"
+    ]
   },
   "audio": {
-    "volume": 70,
-    "max_volume": 100,
+    "volume": 35,
+    "max_volume": 70,
     "muted": false
   },
   "effects": {

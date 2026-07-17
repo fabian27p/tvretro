@@ -1,5 +1,5 @@
 from __future__ import annotations
-import fcntl,os,signal,sys,threading,time
+import fcntl,logging,os,signal,sys,threading,time,traceback
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 from config import Settings
@@ -147,6 +147,17 @@ def lock():
     except BlockingIOError: raise SystemExit('RetroTV ya está ejecutándose')
     f.write(str(os.getpid())); f.flush(); return f
 def main():
-    lk=lock(); app=RetroTV(os.environ.get('RETROTV_BASE','/home/retro/RetroTV'))
-    signal.signal(signal.SIGTERM,lambda *_: setattr(app,'running',False)); signal.signal(signal.SIGINT,lambda *_: setattr(app,'running',False)); app.run()
+    app=None
+    try:
+        lk=lock(); app=RetroTV(os.environ.get('RETROTV_BASE','/home/retro/RetroTV'))
+        signal.signal(signal.SIGTERM,lambda *_: setattr(app,'running',False)); signal.signal(signal.SIGINT,lambda *_: setattr(app,'running',False)); app.run()
+    except Exception:
+        log=logging.getLogger("retrotv")
+        if log.handlers: log.exception("RetroTV termino por un error no controlado")
+        else: traceback.print_exc()
+        raise
+    finally:
+        if app and app.running:
+            try: app.shutdown()
+            except Exception: pass
 if __name__=='__main__': main()

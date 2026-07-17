@@ -197,11 +197,18 @@ En `config/settings.json`:
 "mpv": {
   "video_output": "drm",
   "hwdec": "auto-safe",
-  "extra_args": []
+  "extra_args": [
+    "--profile=fast",
+    "--framedrop=vo",
+    "--vd-lavc-fast=yes",
+    "--vd-lavc-skiploopfilter=nonkey"
+  ]
 }
 ```
 
 Para Raspberry Pi OS Lite usa `drm`.
+
+Si un video se pega en Raspberry, estos argumentos bajan la carga de decodificacion. Tambien ayuda convertir episodios muy pesados a H.264/AAC 720p o 480p.
 
 Para probar en escritorio, cambia temporalmente a:
 
