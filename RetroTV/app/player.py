@@ -8,7 +8,8 @@ class MPVPlayer:
         bindings={
             'n':'n','p':'p','RIGHT':'RIGHT','LEFT':'LEFT','UP':'UP','DOWN':'DOWN',
             'm':'m','ENTER':'ENTER','ESC':'ESC','SPACE':'SPACE','s':'s','q':'q',
-            'N':'n','P':'p','M':'m','S':'s','Q':'q'
+            'N':'n','P':'p','M':'m','S':'s','Q':'q','#':'#','*':'*',
+            '0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9'
         }
         lines=[]
         fifo=str(self.key_fifo_path)

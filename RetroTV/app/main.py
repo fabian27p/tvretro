@@ -109,24 +109,28 @@ class RetroTV:
             self.clock.start()
     def key(self,k):
         if not k: return
-        if self.standby and k not in ('q','m','ESC'):
+        if self.standby and k not in ('q','m','#','ESC'):
             self.standby_toggle(); return
         if self.menu.open:
-            if k in ('m','ESC'): self.menu.toggle()
+            if k in ('m','#','*','ESC'): self.menu.toggle()
             elif k=='UP': self.menu.up()
             elif k=='DOWN': self.menu.down()
             elif k=='LEFT': self.menu.left()
             elif k=='RIGHT': self.menu.right()
-            elif k=='ENTER': self.menu.activate()
+            elif k in ('ENTER','OK'): self.menu.activate()
             return
-        if k in ('n','RIGHT'): self.change(1)
+        if k.isdigit(): self.goto_channel(10 if k=='0' else int(k))
+        elif k in ('n','RIGHT'): self.change(1)
         elif k in ('p','LEFT'): self.change(-1)
         elif k=='UP': self.vol=min(int(self.s.get('audio','max_volume')),self.vol+5); self.p.volume(self.vol); self.sound('volume.mp3'); self.p.show(self.volume_text(),1000,self.volume_style())
         elif k=='DOWN': self.vol=max(0,self.vol-5); self.p.volume(self.vol); self.sound('volume.mp3'); self.p.show(self.volume_text(),1000,self.volume_style())
-        elif k=='m': self.sound('menu_open.mp3'); self.menu.toggle()
-        elif k=='SPACE': self.p.pause()
-        elif k=='s': self.standby_toggle()
+        elif k in ('m','#'): self.sound('menu_open.mp3'); self.menu.toggle()
+        elif k in ('SPACE','ENTER','OK'): self.p.pause()
+        elif k in ('s','*'): self.standby_toggle()
         elif k=='q': self.running=False
+    def goto_channel(self,n):
+        if n<1 or n>int(self.s.get('general','max_channels')): return
+        self.play_channel(n)
     def run(self):
         with Keyboard(KEY_FIFO) as kb:
             self.boot()

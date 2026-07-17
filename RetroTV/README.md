@@ -187,7 +187,7 @@ Modos de reproduccion:
 
 Hora/WiFi: el menu incluye `Actualizar hora`, pensado para sincronizar el reloj por NTP si la Raspberry tiene red. Si no instalas pila RTC, tambien puedes ajustar ano, mes, dia, hora y minuto manualmente desde el menu y usar `Aplicar hora`. En los campos de hora manual, `Enter`/derecha sube y izquierda baja. Para configurar WiFi en Raspberry Pi OS Lite conviene usar Raspberry Pi Imager, `raspi-config`, `nmtui` o `nmcli`; escribir SSID/password con control remoto es incomodo y poco seguro.
 
-IR: ver [docs/ir-remote.md](docs/ir-remote.md). Por defecto usa BCM GPIO 6.
+IR: ver [docs/ir-remote.md](docs/ir-remote.md) y [docs/remote-layout.md](docs/remote-layout.md). Por defecto usa BCM GPIO 6.
 
 ## Configuracion de video
 
